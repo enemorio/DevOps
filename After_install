@@ -1,0 +1,50 @@
+vi /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.159.100 master0.domain.vm master0
+192.168.159.200 slave1.domain.vm slave1
+192.168.159.201 slave2.domain.vm slave2
+
+
+
+vi /etc/resolv.conf
+nameserver 192.168.159.2
+#nameserver 8.8.8.8
+search localdomain domain.vm
+
+chattr +i /etc/resolv.conf
+
+
+
+# in master0:
+ssh-keygen
+ssh-copy_id user@master0
+ssh-copy_id user@slave1
+ssh-copy_id user@slave2
+
+
+
+# vi /etc/ssh/sshd_config
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+GSSAPIAuthentication no
+
+
+
+systemctl restart sshd
+
+
+
+yum update -y 
+yum install -y ansible net-tools
+
+
+
+ssh-agent bash
+ssh-add ~/.ssh/id_rsa
+
+
+
+ansible atlanta -m copy -a "src=/etc/hosts dest=/tmp/hosts"
+ansible all -m setup
